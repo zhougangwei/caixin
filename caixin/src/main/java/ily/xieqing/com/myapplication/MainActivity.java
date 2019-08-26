@@ -16,7 +16,9 @@ import static android.content.Intent.ACTION_USER_PRESENT;
 
 public class MainActivity extends AppCompatActivity {
 
-    private SMSRecevier smsRecevier = new SMSRecevier();
+   private SMSRecevier smsRecevier = new SMSRecevier();
+   private MmsSmsReceiver2 smsRecevier2 = new MmsSmsReceiver2();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -30,18 +32,27 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         }
 
-
         //8.0以上，动态注册广播
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
             IntentFilter intentFilter = new IntentFilter();
             intentFilter.addAction("android.provider.Telephony.SMS_RECEIVED");
             registerReceiver(smsRecevier,intentFilter);
         }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            IntentFilter intentFilter = new IntentFilter();
+            intentFilter.addAction("android.provider.Telephony.MMS_RECEIVED");
+            intentFilter.addAction("android.provider.Telephony.WAP_PUSH_RECEIVED");
+            registerReceiver(smsRecevier2,intentFilter);
+        }
+
+
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         unregisterReceiver(smsRecevier);
+        unregisterReceiver(smsRecevier2);
+
     }
 }
