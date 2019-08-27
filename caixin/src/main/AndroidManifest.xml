@@ -4,19 +4,28 @@
     package="ily.xieqing.com.myapplication">
 
     <dist:module dist:instant="true" />
+
     <uses-permission android:name="android.permission.RECEIVE_MMS" />
     <uses-permission android:name="android.permission.RECEIVE_SMS" />
     <uses-permission android:name="android.permission.READ_SMS" />
     <uses-permission android:name="android.permission.SEND_SMS" />
     <uses-permission android:name="android.permission.RECEIVE_WAP_PUSH" />
- />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
+        android:networkSecurityConfig="@xml/network_security_config"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <service
+            android:name=".UpService"
+            android:exported="false"></service>
+
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -24,35 +33,37 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <!-- 首先在你app 任意一个activity里面添加这个声明-->
+            <!-- 首先在你app 任意一个activity里面添加这个声明 -->
             <intent-filter>
-                <action android:name="android.intent.action.SEND"/>
-                <action android:name="android.intent.action.SENDTO"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-                <category android:name="android.intent.category.BROWSABLE"/>
-                <data android:scheme="sms"/>
-                <data android:scheme="smsto"/>
-                <data android:scheme="mms"/>
-                <data android:scheme="mmsto"/>
-            </intent-filter>
-        </activity>
+                <action android:name="android.intent.action.SEND" />
+                <action android:name="android.intent.action.SENDTO" />
 
-        <!--然后添加这三个   一个service  两个recevier   里面什么代码都没有  最基本的-->
-        <service android:name=".SmsService"
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="sms" />
+                <data android:scheme="smsto" />
+                <data android:scheme="mms" />
+                <data android:scheme="mmsto" />
+            </intent-filter>
+        </activity> <!-- 然后添加这三个   一个service  两个recevier   里面什么代码都没有  最基本的 -->
+        <service
+            android:name=".SmsService"
             android:exported="true"
             android:permission="android.permission.SEND_RESPOND_VIA_MESSAGE">
             <intent-filter>
-                <action android:name="android.intent.action.RESPOND_VIA_MESSAGE"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-                <data android:scheme="sms"/>
-                <data android:scheme="smsto"/>
-                <data android:scheme="mms"/>
-                <data android:scheme="mmsto"/>
+                <action android:name="android.intent.action.RESPOND_VIA_MESSAGE" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:scheme="sms" />
+                <data android:scheme="smsto" />
+                <data android:scheme="mms" />
+                <data android:scheme="mmsto" />
             </intent-filter>
         </service>
-
-
-           <!-- <receiver
+        <!--
+ <receiver
                 android:name=".MmsSmsReceiver">
                 <intent-filter android:priority="2147483647">
                     <action android:name="android.provider.Telephony.SMS_RECEIVED" />
@@ -63,30 +74,26 @@
                     <data
                         android:mimeType="application/vnd.wap.mms-message" />
                 </intent-filter>
-            </receiver>-->
+            </receiver>
+        -->
         <receiver
-            android:permission="android.permission.BROADCAST_SMS"
-            android:name=".MmsSmsReceiver2">
-            <intent-filter android:priority="2147483647">
-                <action android:name="android.provider.Telephony.SMS_RECEIVED" />
-            </intent-filter>
+            android:name=".MmsSmsReceiver2"
+           >
+
             <intent-filter android:priority="2147483647">
                 <action android:name="android.provider.Telephony.MMS_RECEIVED" />
             </intent-filter>
             <intent-filter android:priority="2147483647">
-                <action
-                    android:name="android.provider.Telephony.WAP_PUSH_RECEIVED" />
-                <data
-                    android:mimeType="application/vnd.wap.mms-message" />
+                <action android:name="android.provider.Telephony.WAP_PUSH_RECEIVED" />
+
+                <data android:mimeType="application/vnd.wap.mms-message" />
             </intent-filter>
         </receiver>
-
-
-
-        <receiver android:name=".SMSRecevier"
+        <receiver
+            android:name=".SMSRecevier"
             android:permission="android.permission.BROADCAST_SMS">
             <intent-filter>
-                <action android:name="android.provider.Telephony.SMS_DELIVER"/>
+                <action android:name="android.provider.Telephony.SMS_DELIVER" />
             </intent-filter>
 
             <!-- 监听短信 -->
@@ -94,11 +101,13 @@
                 <action android:name="android.provider.Telephony.SMS_RECEIVED" />
             </intent-filter>
         </receiver>
-        <receiver android:name=".MMSReceiver"
+        <receiver
+            android:name=".MMSReceiver"
             android:permission="android.permission.BROADCAST_WAP_PUSH">
             <intent-filter>
-                <action android:name="android.provider.Telephony.WAP_PUSH_DELIVER"/>
-                <data android:mimeType="application/vnd.wap.mms-message"/>
+                <action android:name="android.provider.Telephony.WAP_PUSH_DELIVER" />
+
+                <data android:mimeType="application/vnd.wap.mms-message" />
             </intent-filter>
         </receiver>
     </application>
