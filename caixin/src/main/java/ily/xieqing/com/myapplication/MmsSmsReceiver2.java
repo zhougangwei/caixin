@@ -32,7 +32,7 @@ public class MmsSmsReceiver2 extends BroadcastReceiver {
         //  mHttpBox.read();
         //  mmsData  = mHttpBox.getInData();
         //广播不在发送
-        abortBroadcast();
+         abortBroadcast();
     }
 
     /*NotifyRespInd notifyRespInd = new NotifyRespInd(

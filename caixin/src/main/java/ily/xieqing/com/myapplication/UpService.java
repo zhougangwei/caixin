@@ -138,7 +138,7 @@ public class UpService extends IntentService {
 
         final JSONObject jsonObject = new JSONObject();
         String id = MMScursor.getString(MMScursor.getColumnIndex("_id"));// 获取pdu表里 彩信的id
-         String phonenumberadd = getAddressNumber(this, id);
+        String phonenumberadd = getAddressNumber(this, id);
         final String phonenumber = phonenumberadd.substring(1);
         int timess = MMScursor.getInt(MMScursor.getColumnIndex("date"));
         long timesslong = (long) timess * 1000;//彩信获取的时间是以秒为单位的。

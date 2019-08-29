@@ -3,58 +3,46 @@ package ily.xieqing.com.myapplication;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
+import android.util.Log;
 
-import java.io.IOException;
-
-import ily.xieqing.com.myapplication.mms.InvalidHeaderValueException;
-import ily.xieqing.com.myapplication.mms.PduHeaders;
+import ily.xieqing.com.myapplication.mms.MmsException;
+import ily.xieqing.com.myapplication.mms.NotificationInd;
 import ily.xieqing.com.myapplication.mms.PduParser;
+import ily.xieqing.com.myapplication.mms.PduPersister;
 
 import static ily.xieqing.com.myapplication.MmsSmsReceiver2.MMS_RECEIVE_ACTION;
 
 public class MMSReceiver extends BroadcastReceiver {
-
+    private NotificationInd mNotificationInd;
+    private String mContentLocation;
     Context context;
     @Override
     public void onReceive(Context context, Intent intent) {
 
         // TODO Auto-generated method stub
         this.context=context;
+        byte[] header = intent.getByteArrayExtra("header");
+        int transactionId = intent.getIntExtra("transactionId",0);
         String action = intent.getAction();
 
         //彩信
         if(action.equals(MMS_RECEIVE_ACTION)){
-        PduParser parser = new PduParser();
+        PduParser parser = new PduParser(intent.getByteArrayExtra("data"),false);
 
-        try {
-             PduHeaders headers = parser.parseHeaders(intent.getByteArrayExtra("data"));
 
-             TransactionId = headers.getTransactionId();
-             if (headers.getMessageType() == PduHeaders.MESSAGE_TYPE_NOTIFICATION_IND) {
-            //号码获取
-            String from = headers.getFrom();
-            final String content_location = headers.getContentLocation();
-            if (content_location != null) {
-                 new Thread() {
-                public void run() {
-                MmsConnect mmsConnect = new MmsContent(context,content_location,TransactionId);
-                 try {
-                      mmsConnect.connect();
-                     } catch (Exception e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();}
-                                         }
-                  }.start();
+
+            mUri = Uri.parse(uriString);
+
+            try {
+                mNotificationInd = (NotificationInd)
+                        PduPersister.getPduPersister(context).load(mUri);
+            } catch (MmsException e) {
+                throw new IllegalArgumentException();
             }
-             }
 
-        } catch (InvalidHeaderValueException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();}
-                  //广播不在发送
-        abortBroadcast();
-        }
-
+            mContentLocation = new String(mNotificationInd.getContentLocation());
+            mId = mContentLocation;
 
 
 
